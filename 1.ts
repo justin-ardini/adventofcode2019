@@ -1,109 +1,6 @@
-const solutionNode = document.getElementById('solution') as HTMLElement;
+import readlines from './util/readlines';
 
-const masses:Array<number> = [
-    106001,
-    131342,
-    51187,
-    87791,
-    68636,
-    109091,
-    111888,
-    98012,
-    90713,
-    54284,
-    143884,
-    121856,
-    117199,
-    77883,
-    132628,
-    123828,
-    56939,
-    50447,
-    77110,
-    103272,
-    148181,
-    59323,
-    98249,
-    110065,
-    144277,
-    108204,
-    92138,
-    54449,
-    108098,
-    119292,
-    65720,
-    136053,
-    116987,
-    78305,
-    143302,
-    145067,
-    106633,
-    90519,
-    58970,
-    57090,
-    77334,
-    55929,
-    95983,
-    139236,
-    62634,
-    89275,
-    113296,
-    59530,
-    114159,
-    98407,
-    120607,
-    84394,
-    91151,
-    135965,
-    56157,
-    114073,
-    95274,
-    75259,
-    60582,
-    136361,
-    54771,
-    53286,
-    70491,
-    131915,
-    114306,
-    120749,
-    117462,
-    86194,
-    112412,
-    140705,
-    72377,
-    113646,
-    145304,
-    60811,
-    127560,
-    78769,
-    99205,
-    127236,
-    136099,
-    69166,
-    141727,
-    115973,
-    100845,
-    90494,
-    62209,
-    85841,
-    116591,
-    78406,
-    140341,
-    139849,
-    55119,
-    64092,
-    58439,
-    52273,
-    51742,
-    57258,
-    95120,
-    138764,
-    106361,
-    82104,
-];
-
-function massToFuel(mass: number): number {
+function massToFuelRecursive(mass: number): number {
   return fuelToFuel(requiredFuel(mass));
 }
 
@@ -111,10 +8,22 @@ function fuelToFuel(fuel: number): number {
   return fuel <= 0 ? 0 : fuel + fuelToFuel(requiredFuel(fuel));
 }
 
-function requiredFuel(massOrFuel: number): number {
-  return Math.floor(massOrFuel / 3.0) - 2
+function massToFuelIterative(mass: number): number {
+  let remainingFuel = requiredFuel(mass);
+  let totalFuel = 0;
+  while (remainingFuel > 0) {
+    totalFuel += remainingFuel;
+    remainingFuel = requiredFuel(remainingFuel);
+  }
+  return totalFuel;
 }
 
-const solution = masses.map(massToFuel).reduce((a, b) => a + b);
+function requiredFuel(massOrFuel: number): number {
+  return Math.floor(massOrFuel / 3.0) - 2;
+}
 
-solutionNode.textContent = String(solution);
+export async function day1(): Promise<number> {
+  const lines = await readlines('./data/1.txt');
+  const masses: Array<number> = lines.map(Number);
+  return masses.map(massToFuelRecursive).reduce((a, b) => a + b);
+}
