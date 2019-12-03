@@ -1,13 +1,13 @@
 import express from 'express';
-import {day2} from './2';
+import {day3} from './3';
 import { runInNewContext } from 'vm';
 
 const app = express();
 
 app.get('/', async (req, res, next) => {
   try {
-    const solution: number = await day2();
-    res.send('Solution 2: ' + solution);
+    const solution: number = await day3();
+    res.send('Solution 3: ' + solution);
   } catch (error) {
     return next(error);
   }
