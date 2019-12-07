@@ -13,8 +13,6 @@ const HALT = 99;
 const POS_MODE = 0;
 const IMM_MODE = 1;
 
-const INPUT = 0;
-
 class Amplifier {
   pos: number = 0;
   output: number = 0;
@@ -33,8 +31,6 @@ class Amplifier {
   }
 
   solve(inputs: Array<number>): number {
-    // let pos = 0;
-    // let output = 0;
     let inputPos = 0;
     while (true) {
       const op = this.numbers[this.pos] % 100;
