@@ -46,28 +46,29 @@ class Amplifier {
     throw Error('invalid op');
   }
 
+  getPs(mode: number, pos: number, count: number): Array<number> {
+    let out: Array<number> = [];
+    for (let i = 1; i <= count; ++i) {
+      out.push(this.getP(mode % 10, pos + i));
+      mode = Math.floor(mode / 10);
+    }
+    return out;
+  }
+
   solve(inputs: Array<number>): number {
     while (true) {
       const op = this.numbers[this.pos] % 100;
       let mode = Math.floor(this.numbers[this.pos] / 100);
       switch (op) {
         case ADD: {
-          let p1 = this.getP(mode % 10, this.pos + 1);
-          mode = Math.floor(mode / 10);
-          let p2 = this.getP(mode % 10, this.pos + 2);
-          mode = Math.floor(mode / 10);
-          let p3 = this.getP(mode, this.pos + 3);
+          let [p1, p2, p3] = this.getPs(mode, this.pos, 3);
           const sum = this.numbers[p1] + this.numbers[p2];
           this.numbers[p3] = sum;
           this.pos += 4;
           break;
         }
         case MULT: {
-          let p1 = this.getP(mode % 10, this.pos + 1);
-          mode = Math.floor(mode / 10);
-          let p2 = this.getP(mode % 10, this.pos + 2);
-          mode = Math.floor(mode / 10);
-          let p3 = this.getP(mode, this.pos + 3);
+          let [p1, p2, p3] = this.getPs(mode, this.pos, 3);
           const product = this.numbers[p1] * this.numbers[p2];
           this.numbers[p3] = product;
           this.pos += 4;
@@ -86,9 +87,7 @@ class Amplifier {
           return this.output;
         }
         case JUMP_IF_TRUE: {
-          let p1 = this.getP(mode % 10, this.pos + 1);
-          mode = Math.floor(mode / 10);
-          let p2 = this.getP(mode, this.pos + 2);
+          let [p1, p2] = this.getPs(mode, this.pos, 2);
           if (this.numbers[p1] != 0) {
             this.pos = this.numbers[p2];
           } else {
@@ -97,9 +96,7 @@ class Amplifier {
           break;
         }
         case JUMP_IF_FALSE: {
-          let p1 = this.getP(mode % 10, this.pos + 1);
-          mode = Math.floor(mode / 10);
-          let p2 = this.getP(mode, this.pos + 2);
+          let [p1, p2] = this.getPs(mode, this.pos, 2);
           if (this.numbers[p1] == 0) {
             this.pos = this.numbers[p2];
           } else {
@@ -108,21 +105,13 @@ class Amplifier {
           break;
         }
         case LESS_THAN: {
-          let p1 = this.getP(mode % 10, this.pos + 1);
-          mode = Math.floor(mode / 10);
-          let p2 = this.getP(mode % 10, this.pos + 2);
-          mode = Math.floor(mode / 10);
-          let p3 = this.getP(mode, this.pos + 3);
+          let [p1, p2, p3] = this.getPs(mode, this.pos, 3);
           this.numbers[p3] = this.numbers[p1] < this.numbers[p2] ? 1 : 0;
           this.pos += 4;
           break;
         }
         case EQUALS: {
-          let p1 = this.getP(mode % 10, this.pos + 1);
-          mode = Math.floor(mode / 10);
-          let p2 = this.getP(mode % 10, this.pos + 2);
-          mode = Math.floor(mode / 10);
-          let p3 = this.getP(mode, this.pos + 3);
+          let [p1, p2, p3] = this.getPs(mode, this.pos, 3);
           this.numbers[p3] = this.numbers[p1] == this.numbers[p2] ? 1 : 0;
           this.pos += 4;
           break;
