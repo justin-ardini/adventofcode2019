@@ -1,5 +1,4 @@
 import readlines from './util/readlines';
-import { generateKeyPairSync } from 'crypto';
 
 function gcd(a: number, b: number): number {
   if (b == 0) {
@@ -38,6 +37,7 @@ function getPairs(asteroids: Array<Array<number>>): Array<[number, number]> {
       }
     }
   }
+  // Janky clockwise sort
   return pairs.sort(([y1, x1], [y2, x2]) => {
     let m1 = x1 == 0 ? -y1 * 100 : -y1 / x1;
     if (y1 < 0 && x1 < 0) {
