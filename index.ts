@@ -1,11 +1,11 @@
 import express from 'express';
-import {day13} from './13';
+import {solve} from './14';
 
 const app = express();
 
 app.get('/', async (req, res, next) => {
   try {
-    const solution: string = await day13();
+    const solution: string = await solve();
     res.send('Solution: ' + solution);
   } catch (error) {
     return next(error);

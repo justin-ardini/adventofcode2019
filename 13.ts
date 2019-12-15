@@ -206,7 +206,7 @@ class Breakout {
   }
 }
 
-export async function day13(): Promise<string> {
+export async function solve(): Promise<string> {
   const lines = await readlines('./data/13.txt');
   const numbers: Array<number> = lines[0].split(',').map(Number);
   const padded = numbers.concat(Array(1000000).fill(0));
