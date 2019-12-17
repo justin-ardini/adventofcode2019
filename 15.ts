@@ -1,6 +1,4 @@
 import readlines from './util/readlines';
-import { randomBytes } from 'crypto';
-import { watchFile } from 'fs';
 
 const ADD = 1;
 const MULT = 2;
