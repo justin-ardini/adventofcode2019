@@ -1,29 +1,25 @@
 import readlines from './util/readlines';
 
-function massToFuelRecursive(mass: number): number {
-  return fuelToFuel(requiredFuel(mass));
-}
-
-function fuelToFuel(fuel: number): number {
-  return fuel <= 0 ? 0 : fuel + fuelToFuel(requiredFuel(fuel));
-}
-
-function massToFuelIterative(mass: number): number {
+function massToFuel(mass: number, part2: boolean): number {
   let remainingFuel = requiredFuel(mass);
   let totalFuel = 0;
-  while (remainingFuel > 0) {
-    totalFuel += remainingFuel;
-    remainingFuel = requiredFuel(remainingFuel);
+  if (part2) {
+    while (remainingFuel > 0) {
+      totalFuel += remainingFuel;
+      remainingFuel = requiredFuel(remainingFuel);
+    }
+    return totalFuel;
+  } else {
+    return remainingFuel;
   }
-  return totalFuel;
 }
 
 function requiredFuel(massOrFuel: number): number {
   return Math.floor(massOrFuel / 3.0) - 2;
 }
 
-export async function day1(): Promise<number> {
+export async function solve(): Promise<number> {
   const lines = await readlines('./data/1.txt');
   const masses: Array<number> = lines.map(Number);
-  return masses.map(massToFuelRecursive).reduce((a, b) => a + b);
+  return masses.map((m) => massToFuel(m, true)).reduce((a, b) => a + b);
 }

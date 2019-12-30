@@ -31,7 +31,7 @@ function getOrbitSteps(key: string): Map<string, number> {
   return steps;
 }
 
-export async function day6(): Promise<number> {
+export async function solve(): Promise<number> {
   const lines = await readlines('./data/6.txt');
   const pairs = lines.map(l => l.split(')'));
   for (let [a, b] of pairs) {

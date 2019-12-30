@@ -1,11 +1,11 @@
 import express from 'express';
-import {solve} from './25';
+import {solve} from './4';
 
 const app = express();
 
 app.get('/', async (req, res, next) => {
   try {
-    const solution: string = await solve();
+    const solution = await solve();
     res.send('Solution: ' + solution);
   } catch (error) {
     return next(error);

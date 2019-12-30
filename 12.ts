@@ -49,7 +49,7 @@ function energy(moon: Vec3, v: Vec3) {
   return ke * pe;
 }
 
-function solve(moons: Array<Vec3>): number {
+function part2(moons: Array<Vec3>): number {
   const startMoons: Array<Vec3> = [...moons];
   const vs: Array<Vec3> = [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]];
   const cycleLengths: Array<number> = [-1, -1, -1];
@@ -76,7 +76,7 @@ function solve(moons: Array<Vec3>): number {
   return cycleLengths.reduce((a, b) => lcm(a, b));
 }
 
-export async function day12(): Promise<string> {
+export async function solve(): Promise<string> {
   const moons: Array<Vec3> = [[-19, -4, 2],
       [-9, 8, -16],
       [-4, 5, -11],
@@ -87,5 +87,5 @@ export async function day12(): Promise<string> {
       [4, -8, 8],
       [3, 5, -1]];
     */
-  return String(solve(moons));
+  return String(part2(moons));
 }

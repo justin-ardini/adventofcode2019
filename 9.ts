@@ -133,7 +133,7 @@ class Amplifier {
   }
 }
 
-export async function day9(): Promise<string> {
+export async function solve(): Promise<string> {
   const lines = await readlines('./data/9.txt');
   const numbers: Array<number> = lines[0].split(',').map(Number);
   // const numbers = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99];

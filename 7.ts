@@ -124,7 +124,7 @@ class Amplifier {
   }
 }
 
-export async function day7(): Promise<number> {
+export async function solve(): Promise<number> {
   const lines = await readlines('./data/7.txt');
   const numbers: Array<number> = lines[0].split(',').map(Number);
   let maxOut = -Infinity;

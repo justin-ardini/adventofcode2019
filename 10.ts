@@ -136,7 +136,7 @@ function part2(asteroids: Array<Array<number>>, pairs: Array<[number, number]>):
   return c * 100 + r;
 }
 
-export async function day10(): Promise<string> {
+export async function solve(): Promise<string> {
   const lines = await readlines('./data/10.txt');
   let asteroids: Array<Array<number>> = [];
   for (let line of lines) {

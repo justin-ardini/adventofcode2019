@@ -217,7 +217,7 @@ class Robot {
   }
 }
 
-export async function day11(): Promise<string> {
+export async function solve(): Promise<string> {
   const lines = await readlines('./data/11.txt');
   const numbers: Array<number> = lines[0].split(',').map(Number);
   const padded = numbers.concat(Array(1000000).fill(0));

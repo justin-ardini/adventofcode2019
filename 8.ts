@@ -7,7 +7,7 @@ const TRANSPARENT = 2;
 const W = 25;
 const H = 6;
 
-function solve(input: string): Array<string> {
+function getImage(input: string): Array<string> {
   let min0 = Infinity;
   let min1 = Infinity;
   let min2 = Infinity;
@@ -55,8 +55,8 @@ function solve(input: string): Array<string> {
   return image;
 }
 
-export async function day8(): Promise<string> {
+export async function solve(): Promise<string> {
   const lines = await readlines('./data/8.txt');
-  let img = solve(lines[0]);
+  let img = getImage(lines[0]);
   return img.join('');
 }

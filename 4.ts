@@ -29,7 +29,7 @@ function isMatch(n: number): boolean {
   return isAscending(digits) && hasDigitsPair(digits);
 }
 
-export function day4(): number {
+export function solve(): number {
   let matches = 0;
 
   for (let i = 193651; i <= 649729; ++i) {

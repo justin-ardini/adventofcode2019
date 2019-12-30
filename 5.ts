@@ -16,7 +16,7 @@ const IMM_MODE = 1;
 
 const INPUT = 5;
 
-function solve(numbers: Array<number>): Array<number> {
+function run(numbers: Array<number>): Array<number> {
   let pos = 0;
   let mode = 0;
   while (true) {
@@ -108,9 +108,9 @@ function solve(numbers: Array<number>): Array<number> {
   throw Error("Invalid program");
 }
 
-export async function day5(): Promise<number> {
+export async function solve(): Promise<number> {
   const lines = await readlines('./data/5.txt');
   const numbers: Array<number> = lines[0].split(',').map(Number);
-  const program = solve(numbers);
+  const program = run(numbers);
   return 0;
 }
