@@ -1,11 +1,5 @@
 import readlines from './util/readlines';
-
-function gcd(a: number, b: number): number {
-  if (b == 0) {
-    return a;
-  }
-  return gcd(b, a % b);
-}
+import {gcd} from './util/math';
 
 function getPairs(asteroids: number[][]): [number, number][] {
   let pairs: [number, number][] = [];
