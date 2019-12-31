@@ -1,4 +1,6 @@
 import readlines from './util/readlines';
+import Map2d from './util/map2d';
+import Vec2d from './util/vec2d';
 
 const ADD = 1;
 const MULT = 2;
@@ -25,9 +27,9 @@ class Amplifier {
   output: number = 0;
   halted: boolean = false;
   relBase: number = 0;
-  numbers: Array<number>;
+  numbers: number[];
   
-  constructor(numbers: Array<number>) {
+  constructor(numbers: number[]) {
     this.numbers = numbers;
   }
 
@@ -44,11 +46,11 @@ class Amplifier {
       case REL_MODE:
         return this.numbers[pos] + this.relBase;
     }
-    throw Error('invalid op');
+    throw Error('Invalid op');
   }
 
-  getPs(mode: number, pos: number, count: number): Array<number> {
-    let out: Array<number> = [];
+  getPs(mode: number, pos: number, count: number): number[] {
+    let out: number[] = [];
     for (let i = 1; i <= count; ++i) {
       out.push(this.getP(mode % 10, pos + i));
       mode = Math.floor(mode / 10);
@@ -56,7 +58,7 @@ class Amplifier {
     return out;
   }
 
-  solve(inputs: Array<number>): number {
+  solve(inputs: number[]): number {
     while (true) {
       const op = this.numbers[this.pos] % 100;
       let mode = Math.floor(this.numbers[this.pos] / 100);
@@ -137,89 +139,76 @@ class Amplifier {
 class Robot {
   numPaints: number = 0;
 
-  turn(rot: number, [dirx, diry]: [number, number]): [number, number] {
+  turn(rot: number, dir: Vec2d): Vec2d {
     if (rot == 0) {
       // left 90deg
-      return dirx == 0 ? [-diry, 0] : [0, dirx];
+      return Vec2d.fromArr(dir.x === 0 ? [-dir.y, 0] : [0, dir.x]);
     } else {
       // right 90deg
-      return dirx == 0 ? [diry, 0]: [0, -dirx];
+      return Vec2d.fromArr(dir.x === 0 ? [dir.y, 0]: [0, -dir.x]);
     }
   }
 
-  paint(grid: Map<number, Map<number, number>>, color: number, [gridx, gridy]: [number, number]) {
-    let yToColor: Map<number, number> = new Map();
-    if (!grid.has(gridx)) {
-      grid.set(gridx, yToColor);
+  paint(grid: Map2d<number>, color: number, pos: Vec2d) {
+    if (!grid.has(pos)) {
       ++this.numPaints;
-    } else {
-      yToColor = grid.get(gridx)!;
-      if (!yToColor.has(gridy)) {
-        ++this.numPaints;
-      }
     }
-    yToColor.set(gridy, color);
+    grid.set(pos, color);
   }
 
-  getColor(grid: Map<number, Map<number, number>>, [gridx, gridy]: [number, number]): number {
-    if (!grid.has(gridx)) {
-      return 0;
-    }
-    let yToColor: Map<number, number> = grid.get(gridx)!;
-    return yToColor.get(gridy) || 0;
+  getColor(grid: Map2d<number>, pos: Vec2d): number {
+    return grid.get(pos) || 0;
   }
 
-  solve(program: Array<number>): String {
+  solve(program: number[], part2: boolean): string {
     let amp = new Amplifier([...program]);
-    let [gridx, gridy]: [number, number] = [0, 0];
-    let [dirx, diry]: [number, number] = [0, 1];
-    let grid: Map<number, Map<number, number>> = new Map();
-    this.paint(grid, 1, [gridx, gridy]);
+    let pos = new Vec2d(0, 0);
+    let dir = new Vec2d(0, 1);
+    let grid: Map2d<number> = new Map2d();
+    if (part2) {
+      this.paint(grid, 1, pos);
+    }
     while (!amp.isHalted()) {
-      let color: number = amp.solve([this.getColor(grid, [gridx, gridy])]);
-      if (color == HALT_CODE) {
+      let color = amp.solve([this.getColor(grid, pos)]);
+      if (color === HALT_CODE) {
         break;
       }
       let rot: number = amp.solve([]);
-      this.paint(grid, color, [gridx, gridy]);
-      [dirx, diry] = this.turn(rot, [dirx, diry]);
-      [gridx, gridy] = [gridx + dirx, gridy + diry];
+      this.paint(grid, color, pos);
+      dir = this.turn(rot, dir);
+      pos = pos.add(dir);
     }
-    return this.asBinaryImage(grid);
+    if (part2) {
+      return this.asBinaryImage(grid).join('');
+    } else {
+      return String(this.numPaints);
+    }
   }
 
-  asBinaryImage(grid: Map<number, Map<number, number>>): String {
-    let [minx, miny] = [Infinity, Infinity];
-    let [maxx, maxy] = [-Infinity, -Infinity];
-    for (let [gridx, yToColor] of grid.entries()) {
-      for (let [gridy, color] of yToColor.entries()) {
-        minx = Math.min(minx, gridx);
-        miny = Math.min(miny, gridy);
-        maxx = Math.max(maxx, gridx);
-        maxy = Math.max(maxy, gridy);
-      }
+  asBinaryImage(grid: Map2d<number>): number[] {
+    let keys = Array.from(grid.keys());
+    let xVals = keys.map(k => k.x);
+    let yVals = keys.map(k => k.y);
+    let min = new Vec2d(Math.min(...xVals), Math.min(...yVals));
+    let max = new Vec2d(Math.max(...xVals), Math.max(...yVals));
+    let size = new Vec2d(max.x - min.x + 1, max.y - min.y + 1);
+
+    let img: number[] = new Array(size.x * size.y).fill(0);
+    for (let [pos, color] of grid) {
+      img[pos.x - min.x + (max.y - pos.y) * size.x] = color;
     }
-    let [sx, sy] = [maxx - minx + 1, maxy - miny + 1];
-    let img: Array<Array<number>> = [];
-    for (let x = 0; x < sx; ++ x) {
-      let row: Array<number> = [];
-      img[x] = row;
-      for (let y = 0; y < sy; ++y) {
-        row[y] = 0;
-      }
-    }
-    for (let [gridx, yToColor] of grid.entries()) {
-      for (let [gridy, color] of yToColor.entries()) {
-        img[gridx - minx][gridy - miny] = color;
-      }
-    }
-    return img.map(r => r.map(String).join('')).join('');
+    const drawImg = () => img.map((v, i) => {
+      let out = v === 0 ? ' ' : '#';
+      return i % size.x === size.x - 1 ? `${out}\n` : out;
+    }).join('');
+    console.log(drawImg());
+    return img;
   }
 }
 
 export async function solve(): Promise<string> {
   const lines = await readlines('./data/11.txt');
-  const numbers: Array<number> = lines[0].split(',').map(Number);
+  const numbers: number[] = lines[0].split(',').map(Number);
   const padded = numbers.concat(Array(1000000).fill(0));
-  return String(new Robot().solve(padded));
+  return String(new Robot().solve(padded, true));
 }

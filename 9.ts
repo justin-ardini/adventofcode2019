@@ -43,7 +43,7 @@ class Amplifier {
       case REL_MODE:
         return this.numbers[pos] + this.relBase;
     }
-    throw Error('invalid op');
+    throw Error('Invalid op');
   }
 
   getPs(mode: number, pos: number, count: number): number[] {
