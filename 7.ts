@@ -16,10 +16,10 @@ const IMM_MODE = 1;
 class Amplifier {
   pos: number = 0;
   output: number = 0;
-  numbers: Array<number>;
+  numbers: number[];
   halted: boolean;
   
-  constructor(numbers: Array<number>) {
+  constructor(numbers: number[]) {
     this.pos = 0;
     this.output = 0;
     this.halted = false;
@@ -30,7 +30,7 @@ class Amplifier {
     return this.halted;
   }
 
-  solve(inputs: Array<number>): number {
+  solve(inputs: number[]): number {
     let inputPos = 0;
     while (true) {
       const op = this.numbers[this.pos] % 100;
@@ -124,36 +124,46 @@ class Amplifier {
   }
 }
 
-export async function solve(): Promise<number> {
-  const lines = await readlines('./data/7.txt');
-  const numbers: Array<number> = lines[0].split(',').map(Number);
+function findMaxSignal(program: number[], part2: boolean): number {
   let maxOut = -Infinity;
-  for (let phaseA = 5; phaseA <= 9; ++phaseA) {
-    for (let phaseB = 5; phaseB <= 9; ++phaseB) {
-      for (let phaseC = 5; phaseC <= 9; ++phaseC) {
-        for (let phaseD = 5; phaseD <= 9; ++phaseD) {
-          for (let phaseE = 5; phaseE <= 9; ++phaseE) {
-            let phases: Set<number> = new Set([phaseA, phaseB, phaseC, phaseD, phaseE]);
+  let min = part2 ? 5 : 0;
+  for (let phaseA = min; phaseA < min + 5; ++phaseA) {
+    for (let phaseB = min; phaseB < min + 5; ++phaseB) {
+      for (let phaseC = min; phaseC < min + 5; ++phaseC) {
+        for (let phaseD = min; phaseD < min + 5; ++phaseD) {
+          for (let phaseE = min; phaseE < min + 5; ++phaseE) {
+            let phases = new Set([phaseA, phaseB, phaseC, phaseD, phaseE]);
             if (phases.size != 5) {
               continue;
             }
-            let ampA = new Amplifier([...numbers]);
-            let ampB = new Amplifier([...numbers]);
-            let ampC = new Amplifier([...numbers]);
-            let ampD = new Amplifier([...numbers]);
-            let ampE = new Amplifier([...numbers]);
+            let ampA = new Amplifier([...program]);
+            let ampB = new Amplifier([...program]);
+            let ampC = new Amplifier([...program]);
+            let ampD = new Amplifier([...program]);
+            let ampE = new Amplifier([...program]);
             let input = 0;
             let first = true;
-            while (!ampE.isHalted()) {
-              input = ampA.solve(first ? [phaseA, input] : [input]);
-              input = ampB.solve(first ? [phaseB, input] : [input]);
-              input = ampC.solve(first ? [phaseC, input] : [input]);
-              input = ampD.solve(first ? [phaseD, input] : [input]);
-              input = ampE.solve(first ? [phaseE, input] : [input]);
-              first = false;
-            }
-            if (input > maxOut) {
-              maxOut = input;
+            if (part2) {
+              while (!ampE.isHalted()) {
+                input = ampA.solve(first ? [phaseA, input] : [input]);
+                input = ampB.solve(first ? [phaseB, input] : [input]);
+                input = ampC.solve(first ? [phaseC, input] : [input]);
+                input = ampD.solve(first ? [phaseD, input] : [input]);
+                input = ampE.solve(first ? [phaseE, input] : [input]);
+                first = false;
+              }
+              if (input > maxOut) {
+                maxOut = input;
+              }
+            } else {
+              input = ampA.solve([phaseA, input]);
+              input = ampB.solve([phaseB, input]);
+              input = ampC.solve([phaseC, input]);
+              input = ampD.solve([phaseD, input]);
+              input = ampE.solve([phaseE, input]);
+              if (input > maxOut) {
+                maxOut = input;
+              }
             }
           }
         }
@@ -161,4 +171,10 @@ export async function solve(): Promise<number> {
     }
   }
   return maxOut;
+}
+
+export async function solve(): Promise<number> {
+  const lines = await readlines('./data/7.txt');
+  const numbers: number[] = lines[0].split(',').map(Number);
+  return findMaxSignal(numbers, true);
 }

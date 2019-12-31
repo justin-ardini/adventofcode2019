@@ -18,11 +18,11 @@ const REL_MODE = 2;
 class Amplifier {
   pos: number = 0;
   output: number = 0;
-  numbers: Array<number>;
+  numbers: number[];
   halted: boolean;
   relBase: number = 0;
   
-  constructor(numbers: Array<number>) {
+  constructor(numbers: number[]) {
     this.pos = 0;
     this.output = 0;
     this.halted = false;
@@ -46,8 +46,8 @@ class Amplifier {
     throw Error('invalid op');
   }
 
-  getPs(mode: number, pos: number, count: number): Array<number> {
-    let out: Array<number> = [];
+  getPs(mode: number, pos: number, count: number): number[] {
+    let out: number[] = [];
     for (let i = 1; i <= count; ++i) {
       out.push(this.getP(mode % 10, pos + i));
       mode = Math.floor(mode / 10);
@@ -55,7 +55,7 @@ class Amplifier {
     return out;
   }
 
-  solve(inputs: Array<number>): number {
+  solve(inputs: number[]): number {
     while (true) {
       const op = this.numbers[this.pos] % 100;
       let mode = Math.floor(this.numbers[this.pos] / 100);
@@ -133,15 +133,18 @@ class Amplifier {
   }
 }
 
-export async function solve(): Promise<string> {
-  const lines = await readlines('./data/9.txt');
-  const numbers: Array<number> = lines[0].split(',').map(Number);
-  // const numbers = [109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99];
-  const padded = numbers.concat(Array(1000000).fill(0));
-  let amp = new Amplifier([...padded]);
-  let out = '';
+function runProgram(program: number[], part2: boolean): number {
+  let amp = new Amplifier([...program]);
+  let out = 0;
   while (!amp.isHalted()) {
-    out += String(amp.solve([2])) + ', ';
+    out = amp.solve([part2 ? 2 : 1]);
   }
   return out;
+}
+
+export async function solve(): Promise<number> {
+  const lines = await readlines('./data/9.txt');
+  const numbers: number[] = lines[0].split(',').map(Number);
+  const padded = numbers.concat(Array(1000000).fill(0));
+  return runProgram(padded, true);
 }
