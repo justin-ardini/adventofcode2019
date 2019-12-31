@@ -14,7 +14,7 @@ const HALT = 99;
 const POS_MODE = 0;
 const IMM_MODE = 1;
 
-const INPUT = 5;
+const INPUT = 5;  // 1 for part 1, 5 for part 2
 
 function run(numbers: Array<number>): Array<number> {
   let pos = 0;
@@ -112,5 +112,6 @@ export async function solve(): Promise<number> {
   const lines = await readlines('./data/5.txt');
   const numbers: Array<number> = lines[0].split(',').map(Number);
   const program = run(numbers);
+  // Answer logged to console.
   return 0;
 }
