@@ -1,6 +1,6 @@
 # adventofcode2019
 
-TypeScript solutions to Advent of Code 2019.
+TypeScript solutions to Advent of Code 2019, with minimal use of external libraries.
 
 
 | Day | Part 1 Time | Part 1 Rank | Part 2 Time | Part 2 Rank |
