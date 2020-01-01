@@ -39,12 +39,19 @@ function repeatArray(arr: number[], n: number): number[] {
 
 export async function solve(): Promise<string> {
   const lines = await readlines('./data/16.txt');
-  // const lines = ['80871224585914546619083218645595'];
   let digits = lines[0].split('').map(Number);
   let offset = digits.slice(0, 7).reduce((r, n, i) => r * 10 + n);
-  digits = repeatArray(digits, 10000);
-  for (let i = 0; i < 100; ++i) {
-    digits = fft2(digits, offset);
+  let part2 = true;
+  if (part2) {
+    digits = repeatArray(digits, 10000);
+    for (let i = 0; i < 100; ++i) {
+      digits = fft2(digits, offset);
+    }
+    return digits.slice(offset, offset + 8).join('');
+  } else {
+    for (let i = 0; i < 100; ++i) {
+      digits = fft1(digits);
+    }
+    return digits.slice(0, 8).join('');
   }
-  return String(digits.slice(offset, offset + 8).join(''));
 }
