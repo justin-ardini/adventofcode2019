@@ -12,7 +12,7 @@ function parseChemical(s: string): Chemical {
 
 function addWaste(chem: Chemical, waste: Chemical[]) {
   for (let w of waste) {
-    if (w[1] == chem[1]) {
+    if (w[1] === chem[1]) {
       w[0] += chem[0];
       return;
     }
@@ -22,7 +22,7 @@ function addWaste(chem: Chemical, waste: Chemical[]) {
 
 function findOre(chemPairs: [Chemical[], Chemical][], chem: Chemical, waste: Chemical[]): number {
   let [ins, out] = chemPairs.find(pair => pair[1][1] == chem[1])!;
-  let w = waste.find(pair => pair[1][1] == chem[1]);
+  let w = waste.find(pair => pair[1][1] === chem[1]);
   if (w) {
     if (w[0] >= chem[0]) {
       w[0] -= chem[0];
@@ -37,7 +37,7 @@ function findOre(chemPairs: [Chemical[], Chemical][], chem: Chemical, waste: Che
   if (wasteAmount > 0) {
     addWaste([wasteAmount, out[1]], waste);
   }
-  if (ins.length == 1 && ins[0][1] == ORE) {
+  if (ins.length === 1 && ins[0][1] === ORE) {
     return amount * ins[0][0];
   }
   return ins.map(([c, n]) => findOre(chemPairs, [amount * c, n], waste)).reduce((a, b) => a + b);
@@ -59,12 +59,17 @@ function findFuelTotal(fn: (fuel: number) => number, targetOre: number, min: num
   return fuel;
 }
 
-export async function solve(): Promise<string> {
+export async function solve(): Promise<number> {
   const lines = await readlines('./data/14.txt');
   const rawPairs = lines.map(l => l.split('=>').map(s => s.split(',').map(s => s.trim())));
   let chemPairs: [Chemical[], Chemical][] = rawPairs.map(
     ([ins, out]) => [ins.map(parseChemical), parseChemical(out[0])]);
-  return String(findFuelTotal(
-    (fuel: number) => findOre(chemPairs, [fuel, FUEL], []),
-    1000000000000, 0, 100000000));
+  let part2 = true;
+  if (part2) {
+    return findFuelTotal(
+      (fuel: number) => findOre(chemPairs, [fuel, FUEL], []),
+      1000000000000, 0, 100000000);
+  } else {
+    return findOre(chemPairs, [1, FUEL], []);
+  }
 }
