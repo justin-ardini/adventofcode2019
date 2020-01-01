@@ -1,112 +1,69 @@
 import readlines from './util/readlines';
+import Map2d from './util/map2d';
+import Vec2d from './util/vec2d';
 
-// row -> column -> [row, column, level]
-type AdjacencyGraph = Map<number, Map<number, [number, number, number][]>>;
+/** pos -> [pos, level][] */
+type AdjacencyGraph = Map2d<[Vec2d, number][]>;
 
 const START = 'AA';
 const END = 'ZZ';
 
-function visit(pos: [number, number, number], visited: boolean[][][]) {
-  let y = visited[pos[0]];
-  if (!y) {
-    y = [];
-    visited[pos[0]] = y;
-  }
-  let l = y[pos[1]];
-  if (!l) {
-    l = [];
-    y[pos[1]] = l;
-  }
-  l[pos[2]] = true;
-}
-
-function isVisited(pos: [number, number, number], visited: boolean[][][]) {
-  return visited[pos[0]] && visited[pos[0]][pos[1]] && visited[pos[0]][pos[1]][pos[2]];
-}
-
-function bfs(adjacencies: AdjacencyGraph, start: [number, number], end: [number, number]): number {
-  let visited: boolean[][][] = [];
-  visit([start[0], start[1], 0], visited);
-  let q: Array<[number, number, number, number]> = [];  // [x, y, level, distance]
-  q.push([start[0], start[1], 0, 0]);
-  while (q.length != 0) {
-    let [x, y, level, dist] = q.shift()!;
-    if (x == end[0] && y == end[1] && level == 0) {
-      return dist;
-    }
-    let adj: [number, number, number][] = adjacencies.get(x)!.get(y)!;
-    for (let posd of adj) {
-      let pos: [number, number, number] = [posd[0], posd[1], posd[2] + level];
-      if (pos[2] < 0) {
-        // Can't go outside the outer level.
-        break;
-      }
-      if (!isVisited(pos, visited)) {
-        visit(pos, visited);
-        q.push([pos[0], pos[1], pos[2], dist + 1]);
-      }
-    }
-  }
-  return -1;
-}
-
-function addTile(graph: AdjacencyGraph, [x, y]: [number, number]): [number, number, number][] {
-  let yToAdj: Map<number, [number, number, number][]> = new Map();
-  if (!graph.has(x)) {
-    graph.set(x, yToAdj);
+function getLabel(tiles: string[][], pos: Vec2d, dir: Vec2d): string {
+  const pos2 = pos.add(dir);
+  if (dir.x > 0 || dir.y > 0) {
+    return tiles[pos.x][pos.y] + tiles[pos2.x][pos2.y];
   } else {
-    yToAdj = graph.get(x)!;
-  }
-  if (!yToAdj.has(y)) {
-    yToAdj.set(y, []);
-  }
-  return yToAdj.get(y)!;
-}
-
-function getLabel(tiles: string[][], [r, c]: [number, number], [dr, dc]: [number, number]): string {
-  if (dr > 0 || dc > 0) {
-    return tiles[r][c] + tiles[r + dr][c + dc];
-  } else {
-    return tiles[r + dr][c + dc] + tiles[r][c];
+    return tiles[pos2.x][pos2.y] + tiles[pos.x][pos.y];
   }
 }
 
-function addWarp(warps: Map<string, [number, number, number][]>, label: string, pos: [number, number], rlen: number, clen: number) {
+function addTile(graph: AdjacencyGraph, pos: Vec2d): [Vec2d, number][] {
+  let adj = graph.get(pos);
+  if (!adj) {
+    adj = [];
+    graph.set(pos, adj);
+  }
+  return adj;
+}
+
+function addWarp(warps: Map<string, [Vec2d, number][]>, label: string, pos: Vec2d, rlen: number, clen: number) {
   if (!warps.has(label)) {
     warps.set(label, []);
   }
   let arr = warps.get(label)!;
   let level = 1;
-  if (pos[0] == 2 || pos[0] == rlen - 3) {
+  if (pos.x === 2 || pos.x === rlen - 3) {
     level = -1;
-  } else if (pos[1] == 2 || pos[1] == clen - 3) {
+  } else if (pos.y === 2 || pos.y === clen - 3) {
     level = -1;
   }
-  arr.push([pos[0], pos[1], level]);
+  arr.push([pos, level]);
 }
 
-function parseGraph(tiles: string[][]): [AdjacencyGraph, [number, number], [number, number]] {
-  let graph: AdjacencyGraph = new Map();
-  let warps: Map<string, [number, number, number][]> = new Map();
-  let start: [number, number] = [-1, -1];
-  let end: [number, number] = [-1, -1];
+/** Outputs [graph, start, end]. */
+function parseGraph(tiles: string[][]): [AdjacencyGraph, Vec2d, Vec2d] {
+  let graph: AdjacencyGraph = new Map2d();
+  let warps: Map<string, [Vec2d, number][]> = new Map();
+  let start = new Vec2d(-1, -1);
+  let end = new Vec2d(-1, -1);
+  const dirs: Vec2d[] = [new Vec2d(-1, 0), new Vec2d(1, 0), new Vec2d(0, -1), new Vec2d(0, 1)];
   for (let r = 2; r < tiles.length - 2; ++r) {
     for (let c = 2; c < tiles[r].length - 2; ++c) {
       if (tiles[r][c] == '.') {
-        let adj = addTile(graph, [r, c]);
-        let dirs: [number, number][] = [[-1, 0], [1, 0], [0, -1], [0, 1]];
-        for (let [rd, cd] of dirs) {
-          let [rn, cn] = [r + rd, c + cd];
-          if (tiles[rn][cn] == '.') {
-            adj.push([rn, cn, 0]);
-          } else if (tiles[rn][cn] != '#') {
-            let label = getLabel(tiles, [rn, cn], [rd, cd]);
-            if (label == 'AA') {
-              start = [r, c];
-            } else if (label == 'ZZ') {
-              end = [r, c];
+        let pos = new Vec2d(r, c);
+        let adj = addTile(graph, pos);
+        for (let dir of dirs) {
+          let posn = pos.add(dir);
+          if (tiles[posn.x][posn.y] === '.') {
+            adj.push([posn, 0]);
+          } else if (tiles[posn.x][posn.y] !== '#') {
+            let label = getLabel(tiles, posn, dir);
+            if (label === 'AA') {
+              start = pos;
+            } else if (label === 'ZZ') {
+              end = pos;
             } else {
-              addWarp(warps, label, [r, c], tiles.length, tiles[r].length);
+              addWarp(warps, label, pos, tiles.length, tiles[r].length);
             }
           }
         }
@@ -118,19 +75,63 @@ function parseGraph(tiles: string[][]): [AdjacencyGraph, [number, number], [numb
     if (arr.length != 2) {
       throw Error("Bad warp: " + k);
     }
-    let [r1, c1, level1] = arr[0];
-    let [r2, c2, level2] = arr[1];
-    addTile(graph, [r1, c1]).push([r2, c2, level1]);
-    addTile(graph, [r2, c2]).push([r1, c1, level2]);
+    let [pos1, level1] = arr[0];
+    let [pos2, level2] = arr[1];
+    addTile(graph, pos1).push([pos2, level1]);
+    addTile(graph, pos2).push([pos1, level2]);
   }
 
   return [graph, start, end];
 }
 
-export async function solve(): Promise<string> {
-  // const lines = await readlines('./data/20small.txt');
+function visit([pos, level]: [Vec2d, number], visited: boolean[][][]) {
+  let y = visited[pos.x];
+  if (!y) {
+    y = [];
+    visited[pos.x] = y;
+  }
+  let l = y[pos.y];
+  if (!l) {
+    l = [];
+    y[pos.y] = l;
+  }
+  l[level] = true;
+}
+
+function isVisited([pos, level]: [Vec2d, number], visited: boolean[][][]) {
+  return visited[pos.x] && visited[pos.x][pos.y] && visited[pos.x][pos.y][level];
+}
+
+function shortestPath(graph: AdjacencyGraph, start: Vec2d, end: Vec2d, part2: boolean): number {
+  let visited: boolean[][][] = [];
+  visit([start, 0], visited);
+  let q: Array<[Vec2d, number, number]> = [];  // [pos, level, distance]
+  q.push([start, 0, 0]);
+  while (q.length != 0) {
+    let [pos, level, dist] = q.shift()!;
+    if (pos.x === end.x && pos.y === end.y && level === 0) {
+      return dist;
+    }
+    let adj: [Vec2d, number][] = graph.get(pos)!;
+    for (let [newPos, levelChange] of adj) {
+      let newPosLevel: [Vec2d, number] = [newPos, part2 ? levelChange + level : level];
+      if (newPosLevel[1] < 0) {
+        // Can't go outside the outer level.
+        break;
+      }
+      if (!isVisited(newPosLevel, visited)) {
+        visit(newPosLevel, visited);
+        q.push([newPosLevel[0], newPosLevel[1], dist + 1]);
+      }
+    }
+  }
+  return -1;
+}
+
+export async function solve(): Promise<number> {
   const lines = await readlines('./data/20.txt');
   const tiles: string[][] = lines.map(l => l.split(''));
   const [adjacencies, start, end] = parseGraph(tiles);
-  return String(bfs(adjacencies, start, end));
+  let part2 = true;
+  return shortestPath(adjacencies, start, end, part2);
 }

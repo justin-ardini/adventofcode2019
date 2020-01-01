@@ -178,21 +178,33 @@ class Droid {
    * ...
    * [1067, 1712] = 10000!!!
    */
-  searchBeam(program: number[]): number {
+  searchBeam(program: number[], part2: boolean): number {
     let size = 100;
     let x = 1060;
     let slope = 1.6045;
     let y = Math.round(x * slope);
-    while (true) {
-      let min = new Vec2d(x, y);
-      let max = new Vec2d(x + size - 1, y + size - 1);
-      const bottomLeft = this.checkBeam(program, new Vec2d(max.x, min.y));
-      const topRight = this.checkBeam(program, new Vec2d(min.x, max.y));
-      if (bottomLeft && topRight) {
-        return x * 10000 + y;
+    if (part2) {
+      while (true) {
+        let min = new Vec2d(x, y);
+        let max = new Vec2d(x + size - 1, y + size - 1);
+        const bottomLeft = this.checkBeam(program, new Vec2d(max.x, min.y));
+        const topRight = this.checkBeam(program, new Vec2d(min.x, max.y));
+        if (bottomLeft && topRight) {
+          return x * 10000 + y;
+        }
+        ++x;
+        y = Math.round(x * slope);
       }
-      ++x;
-      y = Math.round(x * slope);
+    } else {
+      size = 50;
+      for (let x = 0; x < size; ++x) {
+        for (let y = 0; y < size; ++y) {
+          if (this.checkBeam(program, new Vec2d(x, y))) {
+            ++this.count;
+          }
+        }
+      }
+      return this.count;
     }
   }
 }
@@ -227,5 +239,6 @@ export async function solve(): Promise<number> {
   const lines = await readlines('./data/19.txt');
   const numbers: number[] = lines[0].split(',').map(Number);
   const padded = numbers.concat(Array(1000000).fill(0));
-  return new Droid().searchBeam(padded);
+  let part2 = true;
+  return new Droid().searchBeam(padded, part2);
 }

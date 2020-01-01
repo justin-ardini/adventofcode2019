@@ -1,6 +1,5 @@
 import readlines from './util/readlines';
 
-
 function biodiversity(tiles: number[][]): number {
   let n = 0;
   for (let r = 0; r < 5; ++r) {
@@ -24,7 +23,7 @@ function step(tiles: number[][]): number[][] {
       let newVal = tiles[r][c];
       if (newVal && neighbors != 1) {
         newVal = 0;
-      } else if (!newVal && (neighbors == 1 || neighbors == 2)) {
+      } else if (!newVal && (neighbors === 1 || neighbors === 2)) {
         newVal = 1;
       }
       row.push(newVal);
@@ -34,12 +33,11 @@ function step(tiles: number[][]): number[][] {
   return newTiles;
 }
 
-function part1(tiles: number[][]): number {
+function runPart1(tiles: number[][]): number {
   let ratings: Set<number> = new Set();
   while (true) {
     tiles = step(tiles);
     let b = biodiversity(tiles);
-    console.log(b);
     if (ratings.has(b)) {
       return b;
     }
@@ -98,28 +96,28 @@ function countNeighbors(levels: Map<number, number[][]>, level: number, r: numbe
   const tiles = levels.get(level);
 
   let above;
-  if (r - 1 == 2 && c == 2) {
+  if (r - 1 === 2 && c === 2) {
     above = countRow(levels, level + 1, 4);
   } else {
     above = r > 0 ? (tiles ? tiles[r - 1][c] : 0) : countCell(levels, level - 1, 1, 2);
   }
 
   let below;
-  if (r + 1 == 2 && c == 2) {
+  if (r + 1 === 2 && c === 2) {
     below = countRow(levels, level + 1, 0);
   } else {
     below = r < 4 ? (tiles ? tiles[r + 1][c] : 0) : countCell(levels, level - 1, 3, 2);
   }
 
   let left;
-  if (r == 2 && c - 1 == 2) {
+  if (r === 2 && c - 1 === 2) {
     left = countColumn(levels, level + 1, 4);
   } else {
     left = c > 0 ? (tiles ? tiles[r][c - 1] : 0) : countCell(levels, level - 1, 2, 1);
   }
 
   let right;
-  if (r == 2 && c + 1 == 2) {
+  if (r === 2 && c + 1 === 2) {
     right = countColumn(levels, level + 1, 0);
   } else {
     right = c < 4 ? (tiles ? tiles[r][c + 1] : 0) : countCell(levels, level - 1, 2, 3);
@@ -137,14 +135,14 @@ function step2(levels: Map<number, number[][]>): Map<number, number[][]> {
     let newTiles: number[][] = initTiles();
     for (let r = 0; r < 5; ++r) {
       for (let c = 0; c < 5; ++c) {
-        if (r == 2 && c == 2) {
+        if (r === 2 && c === 2) {
           continue;
         }
         let neighbors = countNeighbors(levels, level, r, c);
         let newVal = tiles ? tiles[r][c] : 0;
         if (newVal && neighbors != 1) {
           newVal = 0;
-        } else if (!newVal && (neighbors == 1 || neighbors ===2)) {
+        } else if (!newVal && (neighbors === 1 || neighbors === 2)) {
           newVal = 1;
         }
         newTiles[r][c] = newVal;
@@ -155,7 +153,7 @@ function step2(levels: Map<number, number[][]>): Map<number, number[][]> {
   return newLevels;
 }
 
-function part2(tiles: number[][]): number {
+function runPart2(tiles: number[][]): number {
   let levels = new Map();
   levels.set(0, tiles);
   for (let m = 0; m < 200; ++m) {
@@ -164,18 +162,13 @@ function part2(tiles: number[][]): number {
   return countBugs(levels);
 }
 
-export async function solve(): Promise<string> {
+export async function solve(): Promise<number> {
   const lines = await readlines('./data/24.txt');
-  /*
-  const lines = [
-    '....#',
-    '#..#.',
-    '#..##',
-    '..#..',
-    '#....',
-  ];
-  */
   let tiles: number[][] = lines.map(l => l.split('').map(c => c == '#' ? 1 : 0));
-  // return String(part1(tiles));
-  return String(part2(tiles));
+  let part2 = true;
+  if (part2) {
+    return runPart2(tiles);
+  } else {
+    return runPart1(tiles);
+  }
 }

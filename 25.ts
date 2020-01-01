@@ -18,16 +18,16 @@ const REL_MODE = 2;
 const HALT_CODE = 1950399;
 
 
-class Amplifier {
+class IntcodeComputer {
   pos: number = 0;
   output: number = 0;
   outputStr: string = '';
   halted: boolean = false;
   relBase: number = 0;
-  numbers: Array<number>;
+  program: number[];
   
-  constructor(numbers: Array<number>) {
-    this.numbers = numbers;
+  constructor(program: number[]) {
+    this.program = program;
   }
 
   isHalted(): boolean {
@@ -39,9 +39,9 @@ class Amplifier {
       case IMM_MODE:
         return pos;
       case POS_MODE:
-        return this.numbers[pos];
+        return this.program[pos];
       case REL_MODE:
-        return this.numbers[pos] + this.relBase;
+        return this.program[pos] + this.relBase;
     }
     throw Error('invalid op');
   }
@@ -55,45 +55,45 @@ class Amplifier {
     return out;
   }
 
-  solve(inputFn: () => number): number {
+  run(inputFn: () => number): number {
     while (true) {
-      const op = this.numbers[this.pos] % 100;
-      let mode = Math.floor(this.numbers[this.pos] / 100);
+      const op = this.program[this.pos] % 100;
+      let mode = Math.floor(this.program[this.pos] / 100);
       switch (op) {
         case ADD: {
           let [p1, p2, p3] = this.getPs(mode, this.pos, 3);
-          const sum = this.numbers[p1] + this.numbers[p2];
-          this.numbers[p3] = sum;
+          const sum = this.program[p1] + this.program[p2];
+          this.program[p3] = sum;
           this.pos += 4;
           break;
         }
         case MULT: {
           let [p1, p2, p3] = this.getPs(mode, this.pos, 3);
-          const product = this.numbers[p1] * this.numbers[p2];
-          this.numbers[p3] = product;
+          const product = this.program[p1] * this.program[p2];
+          this.program[p3] = product;
           this.pos += 4;
           break;
         }
         case SAVE: {
           let p1 = this.getP(mode, this.pos + 1);
-          this.numbers[p1] = inputFn();
+          this.program[p1] = inputFn();
           this.pos += 2;
-          if (this.numbers[p1] == -1) {
+          if (this.program[p1] == -1) {
             return -1;
           }
           break;
         }
         case OUTPUT: {
           let p1 = this.getP(mode, this.pos + 1);
-          this.output = this.numbers[p1];
+          this.output = this.program[p1];
           this.outputStr += String.fromCharCode(this.output);
           this.pos += 2;
           return this.output;
         }
         case JUMP_IF_TRUE: {
           let [p1, p2] = this.getPs(mode, this.pos, 2);
-          if (this.numbers[p1] != 0) {
-            this.pos = this.numbers[p2];
+          if (this.program[p1] != 0) {
+            this.pos = this.program[p2];
           } else {
             this.pos += 3;
           }
@@ -101,8 +101,8 @@ class Amplifier {
         }
         case JUMP_IF_FALSE: {
           let [p1, p2] = this.getPs(mode, this.pos, 2);
-          if (this.numbers[p1] == 0) {
-            this.pos = this.numbers[p2];
+          if (this.program[p1] == 0) {
+            this.pos = this.program[p2];
           } else {
             this.pos += 3;
           }
@@ -110,19 +110,19 @@ class Amplifier {
         }
         case LESS_THAN: {
           let [p1, p2, p3] = this.getPs(mode, this.pos, 3);
-          this.numbers[p3] = this.numbers[p1] < this.numbers[p2] ? 1 : 0;
+          this.program[p3] = this.program[p1] < this.program[p2] ? 1 : 0;
           this.pos += 4;
           break;
         }
         case EQUALS: {
           let [p1, p2, p3] = this.getPs(mode, this.pos, 3);
-          this.numbers[p3] = this.numbers[p1] == this.numbers[p2] ? 1 : 0;
+          this.program[p3] = this.program[p1] == this.program[p2] ? 1 : 0;
           this.pos += 4;
           break;
         }
         case REL_OFFSET: {
           let p1 = this.getP(mode, this.pos + 1);
-          this.relBase += this.numbers[p1];
+          this.relBase += this.program[p1];
           this.pos += 2;
           break;
         }
@@ -130,7 +130,7 @@ class Amplifier {
           this.halted = true;
           return HALT_CODE;
         default:
-          throw Error("Invalid op: " + op + ", number: " + this.numbers[this.pos]);
+          throw Error("Invalid op: " + op + ", number: " + this.program[this.pos]);
       }
     }
     throw Error("Invalid program");
@@ -164,9 +164,9 @@ class Droid {
   }
 
   run(program: number[]): number {
-    let comp = new Amplifier([...program]);
+    let comp = new IntcodeComputer([...program]);
     while (!comp.isHalted()) {
-      let out = comp.solve(() => this.input());
+      let out = comp.run(() => this.input());
       if (out === HALT_CODE || this.done) {
         console.log(comp.getOutput());
         break;
@@ -178,7 +178,7 @@ class Droid {
 
 export async function solve(): Promise<string> {
   const lines = await readlines('./data/25.txt');
-  const numbers: Array<number> = lines[0].split(',').map(Number);
+  const numbers: number[] = lines[0].split(',').map(Number);
   const padded = numbers.concat(Array(100000).fill(0));
   /**
    * MAP:
