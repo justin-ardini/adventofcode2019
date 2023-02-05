@@ -1,3 +1,4 @@
 .DS_store
 .git
+data/**/*.txt
 node_modules/
